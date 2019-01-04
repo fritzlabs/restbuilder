@@ -85,9 +85,8 @@ class RstTranslator(TextTranslator):
         self.states.append([])
         self.stateindent.append(indent)
 
-    def end_state(self, wrap=True, end=[''], first=None):
+    def end_state(self, end=[''], first=None):
         content = self.states.pop()
-        maxindent = sum(self.stateindent)
         indent = self.stateindent.pop()
         result = []
         toformat = []
@@ -95,10 +94,8 @@ class RstTranslator(TextTranslator):
         def do_format():
             if not toformat:
                 return
-            if wrap:
-                res = self.wrap(''.join(toformat), width=MAXWIDTH-maxindent)
-            else:
-                res = ''.join(toformat).splitlines()
+
+            res = ''.join(toformat).splitlines()
             if end:
                 res += end
             result.append((indent, res))
@@ -322,7 +319,7 @@ class RstTranslator(TextTranslator):
             else:
                 self.add_text('%s    ' % (' '*len(lastname)))
             self.add_text(production.astext() + self.nl)
-        self.end_state(wrap=False)
+        self.end_state()
         raise nodes.SkipNode
 
     def visit_seealso(self, node):
@@ -500,7 +497,7 @@ class RstTranslator(TextTranslator):
             writerow(row)
         writesep('-')
         self.table = None
-        self.end_state(wrap=False)
+        self.end_state()
 
     def visit_acks(self, node):
         self.new_state(0)
@@ -685,19 +682,19 @@ class RstTranslator(TextTranslator):
         self.new_state(self.indent)
 
     def depart_literal_block(self, node):
-        self.end_state(wrap=False)
+        self.end_state()
 
     def visit_doctest_block(self, node):
         self.new_state(0)
 
     def depart_doctest_block(self, node):
-        self.end_state(wrap=False)
+        self.end_state()
 
     def visit_line_block(self, node):
         self.new_state(0)
 
     def depart_line_block(self, node):
-        self.end_state(wrap=False)
+        self.end_state()
 
     def visit_line(self, node):
         # self.log_unknown("line", node)
@@ -736,7 +733,7 @@ class RstTranslator(TextTranslator):
 
     def depart_target(self, node):
         if 'refid' in node:
-            self.end_state(wrap=False)
+            self.end_state()
 
     def visit_index(self, node):
         raise nodes.SkipNode
@@ -795,7 +792,7 @@ class RstTranslator(TextTranslator):
             # reST seems unable to parse a construct like ` ``literal`` <url>`_
             # Hence we revert to the more simple `literal <url>`_
             self.add_text('`%s <%s>`_' % (node.astext(), node['refuri']))
-            # self.end_state(wrap=False)
+            # self.end_state()
             raise nodes.SkipNode
         else:
             self.add_text('`%s <%s>`_' % (node.astext(), node['refuri']))
