@@ -820,9 +820,15 @@ class RstTranslator(TextTranslator):
 
     def visit_literal_emphasis(self, node):
         self.add_text('*')
+        # It is invalid rst to have whitespace preceeding closing markup.
+        # To hack this, we flip the space and the the closing '*'.
+        if node.astext().endswith(' '):
+            text = node.astext()
+            self.add_text(text[:-1] + '*' + ' ')
+            raise nodes.SkipNode
 
     def depart_literal_emphasis(self, node):
-        self.add_text('*')
+        self.add_text('*\ ')
 
     def visit_strong(self, node):
         self.add_text('**')
