@@ -13,7 +13,6 @@ from __future__ import (print_function, unicode_literals, absolute_import)
 
 import os
 import sys
-import re
 import textwrap
 import logging
 
@@ -199,7 +198,8 @@ class RstTranslator(TextTranslator):
     def depart_desc(self, node):
         self.end_state()
 
-    SIGNATURES_TO_SKIP = ('exception', 'class', 'method', 'function')
+    SIGNATURES_TO_SKIP = ('exception', 'class', 'method',
+                          'function', 'attribute', 'classmethod')
 
     def visit_desc_signature(self, node):
         # Don't want to bold the entire signature, so we are
@@ -782,8 +782,9 @@ class RstTranslator(TextTranslator):
         format.
         """
         if 'refuri' not in node:
-            self.add_text('`%s`_' % node['name'])
-            raise nodes.SkipNode
+            if 'name' in node:
+                self.add_text('`%s`_' % node['name'])
+                raise nodes.SkipNode
         elif 'internal' not in node:
             self.add_text('`%s <%s>`_' % (node['name'], node['refuri']))
             raise nodes.SkipNode
